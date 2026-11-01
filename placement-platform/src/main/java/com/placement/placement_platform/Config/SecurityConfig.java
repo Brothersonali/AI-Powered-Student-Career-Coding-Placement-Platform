@@ -2,6 +2,7 @@ package com.placement.placement_platform.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,29 +24,58 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
+                        // Admin pages
+                        .requestMatchers(
+                                "/applications.html",
+                                "/admin-register.html",
+                                "/admin-jobs.html",
+                                "/admin-jobs.js"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST,"/auth/admin/register").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/auth/admin/logout").hasRole("ADMIN")
+
+                        // Admin Job Management APIs
+                        .requestMatchers(HttpMethod.POST, "/jobs")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/jobs/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/jobs/**")
+                        .hasRole("ADMIN")
+
+                        // Public pages
+                        .requestMatchers("/my-applications.html").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/applications/my").authenticated()
+
                         .requestMatchers(
                                 "/",
                                 "/index.html",
                                 "/login.html",
                                 "/register.html",
                                 "/student-profile.html",
-                                "/applications.html",
+                                "/admin-login.html",
                                 "/jobs.html",
                                 "/style.css",
                                 "/script.js",
                                 "/auth/**",
-
                                 "/jobs",
                                 "/jobs/**",
-
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+
+                        // Student and application APIs
                         .requestMatchers(
                                 "/students/**",
                                 "/applications",
                                 "/applications/**"
                         ).authenticated()
+
+                        // Dashboard protection
                         .anyRequest().authenticated()
                 );
 
@@ -54,6 +84,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(

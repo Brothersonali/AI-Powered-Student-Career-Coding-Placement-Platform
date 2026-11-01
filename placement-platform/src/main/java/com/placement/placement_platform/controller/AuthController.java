@@ -1,21 +1,24 @@
 package com.placement.placement_platform.controller;
 
+import com.placement.placement_platform.dto.LoginRequest;
 import com.placement.placement_platform.dto.RegisterRequest;
 import com.placement.placement_platform.entity.Student;
 import com.placement.placement_platform.service.StudentService;
-import com.placement.placement_platform.dto.LoginRequest;
-import jakarta.validation.Valid;
-import java.util.Map;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+
+import java.util.Collections;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import java.util.Collections;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -49,6 +52,7 @@ public class AuthController {
             );
         }
     }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @Valid @RequestBody LoginRequest request,
@@ -60,14 +64,17 @@ public class AuthController {
                     request.getPassword()
             );
 
-            // Purana session ho to invalidate karo.
+            // Invalidate the old session, if one exists.
             HttpSession oldSession = httpRequest.getSession(false);
+
             if (oldSession != null) {
                 oldSession.invalidate();
             }
 
-            // Naya session create karo.
+            // Create a new session.
             HttpSession session = httpRequest.getSession(true);
+
+
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             student.getEmail(),
@@ -81,10 +88,14 @@ public class AuthController {
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
 
+            // Save the security context in the HTTP session.
+
             session.setAttribute(
                     HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     securityContext
             );
+
+            // Save student details in the session.
             session.setAttribute("studentId", student.getId());
             session.setAttribute("studentEmail", student.getEmail());
 
@@ -102,5 +113,20 @@ public class AuthController {
                     Map.of("message", "Invalid email or password.")
             );
         }
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            session.invalidate();
+        }
+
+        SecurityContextHolder.clearContext();
+
+        return ResponseEntity.ok(
+                Map.of("message", "Logout successful!")
+        );
     }
 }

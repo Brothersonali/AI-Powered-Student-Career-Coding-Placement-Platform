@@ -70,10 +70,25 @@ public class StudentController {
                                 "You cannot update another student's profile."));
             }
 
+            // Update Name
+            if (updates.containsKey("name")) {
+                String name = (String) updates.get("name");
+
+                if (name == null || name.isBlank()) {
+                    return ResponseEntity.badRequest().body(
+                            Map.of("message", "Name cannot be empty.")
+                    );
+                }
+
+                student.setName(name.trim());
+            }
+
+            // Update Phone
             if (updates.containsKey("phone")) {
                 student.setPhone((String) updates.get("phone"));
             }
 
+            // Update Semester
             if (updates.containsKey("semester")) {
                 Object semesterValue = updates.get("semester");
 
@@ -87,12 +102,14 @@ public class StudentController {
                 }
             }
 
+            // Update Career Goal
             if (updates.containsKey("careerGoal")) {
                 student.setCareerGoal(
                         (String) updates.get("careerGoal")
                 );
             }
 
+            // Update Skills
             if (updates.containsKey("skills")) {
                 student.setSkills((String) updates.get("skills"));
             }
@@ -123,5 +140,4 @@ public class StudentController {
                 "skills", student.getSkills() == null ? "" : student.getSkills()
         );
     }
-
 }
