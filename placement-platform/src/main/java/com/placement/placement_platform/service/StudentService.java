@@ -6,6 +6,7 @@ import com.placement.placement_platform.repository.StudentRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 public class StudentService {
@@ -77,4 +78,59 @@ public class StudentService {
         return
                 studentRepository.save(student);
     }
+    @Transactional
+    public void deleteStudentById(Long id) {
+
+        if (!studentRepository.existsById(id)) {
+            throw new IllegalArgumentException("Student not found.");
+        }
+
+        studentRepository.deleteById(id);
+    }
+    // Get all students
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
+    }
+
+    // Get student by ID
+    public Student getStudentById(Long id) {
+        return studentRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Student not found.")
+                );
+    }
+    @Transactional
+    public void changePassword(
+            Long studentId,
+            String currentPassword,
+            String newPassword) {
+
+        Student student = getStudentById(studentId);
+
+        // Check current password
+        if (!passwordEncoder.matches(
+                currentPassword, student.getPassword())) {
+
+            throw new IllegalArgumentException(
+                    "Current password is incorrect."
+            );
+        }
+
+        // Prevent using the same password
+        if (passwordEncoder.matches(
+                newPassword, student.getPassword())) {
+
+            throw new IllegalArgumentException(
+                    "New password must be different from current password."
+            );
+        }
+
+        // Encode and save new password
+        student.setPassword(
+                passwordEncoder.encode(newPassword)
+        );
+
+        studentRepository.save(student);
+    }
+
 }

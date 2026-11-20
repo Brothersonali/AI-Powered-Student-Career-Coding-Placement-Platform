@@ -3,6 +3,7 @@ package com.placement.placement_platform.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 public class RegisterRequest {
 
@@ -15,6 +16,10 @@ public class RegisterRequest {
     @Size(max = 150)
     private String email;
 
+    @Pattern(
+            regexp = "^[0-9]{10}$",
+            message = "Phone number must be exactly 10 digits."
+    )
     @NotBlank
     @Size(max = 20)
     private String phone;

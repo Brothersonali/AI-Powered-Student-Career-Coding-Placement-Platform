@@ -2,6 +2,7 @@ package com.placement.placement_platform.controller;
 
 import com.placement.placement_platform.entity.Application;
 import com.placement.placement_platform.repository.ApplicationRepository;
+import com.placement.placement_platform.repository.JobRepository;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -22,10 +23,14 @@ import java.util.Map;
 public class ApplicationController {
 
     private final ApplicationRepository applicationRepository;
+    private final JobRepository jobRepository;
 
     public ApplicationController(
-            ApplicationRepository applicationRepository) {
+            ApplicationRepository applicationRepository,
+            JobRepository jobRepository) {
+
         this.applicationRepository = applicationRepository;
+        this.jobRepository = jobRepository;
     }
 
     // Check Admin authentication
@@ -51,7 +56,7 @@ public class ApplicationController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Application applyForJob(
-            @RequestBody Application application,
+            @Valid @RequestBody Application application,
             HttpSession session) {
 
         Object email = session.getAttribute("studentEmail");
@@ -63,11 +68,22 @@ public class ApplicationController {
             );
         }
 
+        // Validate Job ID
+        if (application.getJobId() == null ||
+                !jobRepository.existsById(application.getJobId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Job does not exist."
+            );
+        }
+
         application.setId(null);
 
         // Use logged-in student's email only
         application.setEmail(email.toString());
 
+        // Default application status
         application.setStatus("Pending");
 
         return applicationRepository.save(application);

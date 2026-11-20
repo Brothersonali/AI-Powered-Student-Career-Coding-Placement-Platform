@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 
 import java.util.Collections;
 import java.util.Map;
+import com.placement.placement_platform.dto.ChangePasswordRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,7 +80,9 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(
                             student.getEmail(),
                             null,
-                            Collections.emptyList()
+                            Collections.singletonList(
+                                    new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_STUDENT")
+                            )
                     );
 
             SecurityContext securityContext =
@@ -111,6 +114,43 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     Map.of("message", "Invalid email or password.")
+            );
+        }
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpSession session) {
+
+        Object studentId = session.getAttribute("studentId");
+
+        if (studentId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Please login first."));
+        }
+
+        if (!request.getNewPassword().equals(
+                request.getConfirmPassword())) {
+
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "New password and confirm password do not match.")
+            );
+        }
+
+        try {
+            studentService.changePassword(
+                    Long.valueOf(studentId.toString()),
+                    request.getCurrentPassword(),
+                    request.getNewPassword()
+            );
+
+            return ResponseEntity.ok(
+                    Map.of("message", "Password changed successfully.")
+            );
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", e.getMessage())
             );
         }
     }

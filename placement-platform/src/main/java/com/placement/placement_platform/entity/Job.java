@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 
 @Entity
@@ -19,10 +20,17 @@ public class Job {
 
     @NotBlank(message = "Company name is required")
     private String companyName;
+    @NotBlank(message = "Job location is required")
+    @Size(max = 100, message = "Location cannot exceed 100 characters")
     private String location;
+
     @Positive(message = "Salary must be greater than zero")
     private Double salary;
+
+    @Size(max = 2000, message = "Description cannot exceed 2000 characters")
     private String description;
+
+    @Size(max = 500, message = "Skills cannot exceed 500 characters")
     private String skills;
 
 

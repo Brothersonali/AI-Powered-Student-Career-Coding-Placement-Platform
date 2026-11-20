@@ -19,6 +19,7 @@ public class StudentController {
         this.studentService = studentService;
     }
 
+    // Get Student Profile
     @GetMapping("/email")
     public ResponseEntity<?> getStudentByEmail(
             @RequestParam String email,
@@ -48,6 +49,7 @@ public class StudentController {
         }
     }
 
+    // Update Student Profile
     @PutMapping("/update")
     public ResponseEntity<?> updateStudent(
             @RequestParam String email,
@@ -85,7 +87,18 @@ public class StudentController {
 
             // Update Phone
             if (updates.containsKey("phone")) {
-                student.setPhone((String) updates.get("phone"));
+                String phone = (String) updates.get("phone");
+
+                if (phone == null ||
+                        !phone.matches("^[0-9]{10}$")) {
+
+                    return ResponseEntity.badRequest().body(
+                            Map.of("message",
+                                    "Phone number must be exactly 10 digits.")
+                    );
+                }
+
+                student.setPhone(phone);
             }
 
             // Update Semester
@@ -96,9 +109,18 @@ public class StudentController {
                         semesterValue.toString().isBlank()) {
                     student.setSemester(null);
                 } else {
-                    student.setSemester(
-                            Integer.parseInt(semesterValue.toString())
+                    int semester = Integer.parseInt(
+                            semesterValue.toString()
                     );
+
+                    if (semester < 1 || semester > 8) {
+                        return ResponseEntity.badRequest().body(
+                                Map.of("message",
+                                        "Semester must be between 1 and 8.")
+                        );
+                    }
+
+                    student.setSemester(semester);
                 }
             }
 
@@ -111,10 +133,13 @@ public class StudentController {
 
             // Update Skills
             if (updates.containsKey("skills")) {
-                student.setSkills((String) updates.get("skills"));
+                student.setSkills(
+                        (String) updates.get("skills")
+                );
             }
 
-            Student savedStudent = studentService.updateStudent(student);
+            Student savedStudent =
+                    studentService.updateStudent(student);
 
             return ResponseEntity.ok(
                     Map.of(
@@ -124,11 +149,12 @@ public class StudentController {
             );
 
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.badRequest()
                     .body(Map.of("message", e.getMessage()));
         }
     }
 
+    // Convert Student Entity to Safe Response
     private Map<String, Object> studentToMap(Student student) {
         return Map.of(
                 "id", student.getId(),

@@ -14,7 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 @RestController
-@CrossOrigin(origins = "*")
+
 public class JobController {
 
     private final JobService jobService;

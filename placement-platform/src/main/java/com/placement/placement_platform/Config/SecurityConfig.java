@@ -11,6 +11,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+
 import java.util.List;
 
 @Configuration
@@ -23,6 +24,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
+
                 .authorizeHttpRequests(auth -> auth
 
                         // Admin pages
@@ -30,7 +32,11 @@ public class SecurityConfig {
                                 "/applications.html",
                                 "/admin-register.html",
                                 "/admin-jobs.html",
-                                "/admin-jobs.js"
+                                "/admin-jobs.js",
+                                "/admin-students.html",
+                                "/admin-coding-questions.html",
+                                        "/admin-coding-questions.js"
+
                         ).hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST,"/auth/admin/register").hasRole("ADMIN")
@@ -54,9 +60,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
+                                "/coding-questions.html",
+                                "/coding-questions.css",
+                                "/coding-questions.js",
                                 "/login.html",
                                 "/register.html",
                                 "/student-profile.html",
+                                "/change-password.html",
                                 "/admin-login.html",
                                 "/jobs.html",
                                 "/style.css",
@@ -67,14 +77,50 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
+                        // Admin Student Management APIs
+                        .requestMatchers("/admin/students/**")
+                        .hasRole("ADMIN")
                         // Student and application APIs
                         .requestMatchers(
                                 "/students/**",
                                 "/applications",
                                 "/applications/**"
                         ).authenticated()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/coding/questions/*/test-cases"
+                        ).hasRole("ADMIN")
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/coding/questions/*/test-cases"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/coding/questions/*/test-cases/*"
+                        ).hasRole("ADMIN")
+                        // Coding Questions APIs
+                        .requestMatchers(HttpMethod.GET, "/api/coding/questions/**").permitAll()
+                        // Student Solved Questions API
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/coding/solved"
+                        ).authenticated()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/coding/questions"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/coding/questions/**"
+                        ).hasRole("ADMIN")
+                        // Code Execution API
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/coding/execute"
+                        ).authenticated()
                         // Dashboard protection
                         .anyRequest().authenticated()
                 );
@@ -88,15 +134,16 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-                "http://localhost:8080",
-                "http://127.0.0.1:8080"
+                "http://localhost:63342",
+                "http://127.0.0.1:63342"
         ));
+        config.setAllowCredentials(true);
+        config.setAllowedHeaders(List.of("*"));
 
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
 
-        config.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();

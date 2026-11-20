@@ -1,11 +1,13 @@
 package com.placement.placement_platform.controller;
 
+import com.placement.placement_platform.dto.AdminRegisterRequest;
 import com.placement.placement_platform.entity.Admin;
 import com.placement.placement_platform.repository.AdminRepository;
 import com.placement.placement_platform.service.AdminService;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -56,7 +58,8 @@ public class AdminAuthController {
 
         if (email == null || password == null) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Email and password are required."));
+                    .body(Map.of("message",
+                            "Email and password are required."));
         }
 
         email = email.trim().toLowerCase();
@@ -78,7 +81,6 @@ public class AdminAuthController {
                         && adminPassword.equals(password)
         ) {
 
-            // Existing default Admin login
             validAdmin = true;
             loggedInEmail = adminEmail;
         }
@@ -88,8 +90,6 @@ public class AdminAuthController {
                     .body(Map.of("message",
                             "Invalid admin email or password."));
         }
-
-//        session.changeSessionId();
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
@@ -121,22 +121,11 @@ public class AdminAuthController {
     // Register New Admin
     @PostMapping("/register")
     public ResponseEntity<?> registerAdmin(
-            @RequestBody Map<String, String> request) {
+            @Valid @RequestBody AdminRegisterRequest request) {
 
-        String name = request.get("name");
-        String email = request.get("email");
-        String password = request.get("password");
-
-        if (name == null || name.isBlank()
-                || email == null || email.isBlank()
-                || password == null || password.length() < 8) {
-
-            return ResponseEntity.badRequest()
-                    .body(Map.of("message",
-                            "Enter name, email and a password of at least 8 characters."));
-        }
-
-        email = email.trim().toLowerCase();
+        String name = request.getName().trim();
+        String email = request.getEmail().trim().toLowerCase();
+        String password = request.getPassword();
 
         if (adminEmail.equalsIgnoreCase(email)) {
             return ResponseEntity.badRequest()
@@ -145,7 +134,7 @@ public class AdminAuthController {
         }
 
         Admin newAdmin = new Admin();
-        newAdmin.setName(name.trim());
+        newAdmin.setName(name);
         newAdmin.setEmail(email);
         newAdmin.setPassword(password);
 
@@ -161,6 +150,8 @@ public class AdminAuthController {
                     .body(Map.of("message", e.getMessage()));
         }
     }
+
+    // Admin Logout
     @PostMapping("/logout")
     public ResponseEntity<?> adminLogout(HttpServletRequest request) {
 
