@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Coding Questions - PlacementHub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>PlacementHub - Manage Coding Questions</h1>
+
+    <nav>
+        <a href="admin-jobs.html">Manage Jobs</a>
+        <a href="applications.html">Applications</a>
+        <a href="dashboard.html">Dashboard</a>
+    </nav>
+</header>
+
+<main class="admin-jobs-container">
+
+    <h2>Manage Coding Questions</h2>
+
+    <!-- Add Question Form -->
+    <section class="admin-job-form">
+
+        <h3>Add New Coding Question</h3>
+
+        <form id="addQuestionForm">
+
+            <input type="text"
+                   id="title"
+                   placeholder="Question Title"
+                   required>
+
+            <textarea id="description"
+                      placeholder="Question Description"
+                      required></textarea>
+
+            <select id="difficulty" required>
+                <option value="">Select Difficulty</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+            </select>
+
+            <input type="text"
+                   id="topic"
+                   placeholder="Topic (Array, String, etc.)"
+                   required>
+
+            <h3>Sample Input / Output</h3>
+
+            <textarea id="sampleInput"
+                      placeholder="Sample Input"
+                      required></textarea>
+
+            <textarea id="sampleOutput"
+                      placeholder="Sample Output"
+                      required></textarea>
+
+            <hr>
+
+            <h3>Test Cases</h3>
+
+            <div id="testCasesContainer">
+
+                <div class="test-case-form">
+
+                    <h4>Test Case 1</h4>
+
+                    <textarea class="testInput"
+                              placeholder="Enter Test Case Input"
+                              required></textarea>
+
+                    <textarea class="testOutput"
+                              placeholder="Enter Expected Output"
+                              required></textarea>
+
+                    <label>
+                        <input type="checkbox" class="testHidden">
+                        Hidden Test Case
+                    </label>
+
+                </div>
+
+            </div>
+
+            <button type="button" id="addTestCaseButton">
+                + Add Another Test Case
+            </button>
+
+            <br><br>
+
+            <button type="submit">
+                Save Question with Test Cases
+            </button>
+
+        </form>
+
+        <p id="questionMessage"></p>
+
+    </section>
+
+    <!-- All Questions -->
+    <section class="admin-all-jobs">
+
+        <h3>All Coding Questions</h3>
+
+        <div id="questionsContainer">
+            <p>Loading questions...</p>
+        </div>
+
+    </section>
+
+</main>
+
+<script src="admin-coding-questions.js"></script>
+
+</body>
+</html>

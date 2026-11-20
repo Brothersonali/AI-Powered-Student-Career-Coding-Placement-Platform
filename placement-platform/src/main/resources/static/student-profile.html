@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile | PlacementHub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h2>PlacementHub</h2>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="index.html#jobs">Jobs</a>
+        <a href="login.html" onclick="logout()">Logout</a>
+    </nav>
+</header>
+
+<main class="jobs">
+
+    <div class="section-heading">
+        <h1>My Student Profile</h1>
+        <p>View and update your student details.</p>
+    </div>
+
+    <section class="profile-layout">
+
+        <!-- LEFT PROFILE CARD -->
+
+        <div class="profile-sidebar">
+
+            <div class="profile-avatar">👩‍🎓</div>
+
+            <h2 id="profileName">Student Name</h2>
+
+            <p id="profileEmail">student@email.com</p>
+
+            <span class="profile-badge">Student</span>
+
+            <p id="profileSemester">Semester: --</p>
+
+            <p id="profileCareerGoal">Career Goal: --</p>
+
+            <!-- PROFILE COMPLETION -->
+
+            <div class="profile-completion">
+
+                <h3>Profile Completion</h3>
+
+                <h2 id="completionPercentage">0%</h2>
+
+                <div class="completion-track">
+                    <div id="completionFill"></div>
+                </div>
+
+                <p id="completionText">Complete your profile!</p>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT PROFILE DETAILS -->
+
+        <div class="profile-main">
+
+            <article class="job-card profile-card">
+
+                <p id="statusMessage">Loading profile...</p>
+
+                <form id="profileForm">
+
+                    <label for="name">Full Name</label>
+                    <input id="name" type="text" required>
+
+                    <label for="email">Email</label>
+                    <input id="email" type="email" readonly>
+
+                    <label for="phone">Phone</label>
+                    <input id="phone" type="text" maxlength="10"
+                           inputmode="numeric" placeholder="10 digit phone number">
+
+                    <label for="semester">Current Semester</label>
+                    <input id="semester" type="number" min="1" max="8">
+
+                    <label for="careerGoal">Career Goal</label>
+                    <input id="careerGoal" type="text">
+
+                    <label for="skills">Skills</label>
+                    <textarea id="skills" rows="3"
+                              placeholder="Enter your skills"></textarea>
+
+                    <button class="btn" type="submit">
+                        Update Profile
+                    </button>
+
+                </form>
+
+            </article>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+    <p>© 2026 PlacementHub | Student Career & Placement Platform</p>
+</footer>
+
+
+<script>
+    const statusMessage = document.getElementById("statusMessage");
+    const profileForm = document.getElementById("profileForm");
+
+    const params = new URLSearchParams(window.location.search);
+
+    const studentEmail =
+        params.get("email") ||
+        localStorage.getItem("studentEmail") ||
+        sessionStorage.getItem("studentEmail");
+
+    profileForm.hidden = true;
+
+
+    // 1. PROFILE COMPLETION
+
+    function updateProfileCompletion() {
+
+        const fields = [
+            document.getElementById("name").value.trim(),
+            document.getElementById("phone").value.trim(),
+            document.getElementById("semester").value.trim(),
+            document.getElementById("careerGoal").value.trim(),
+            document.getElementById("skills").value.trim()
+        ];
+
+        const completed = fields.filter(value => value !== "").length;
+
+        const percentage = Math.round(
+            (completed / fields.length) * 100
+        );
+
+        document.getElementById("completionPercentage").textContent =
+            percentage + "%";
+
+        document.getElementById("completionFill").style.width =
+            percentage + "%";
+
+        document.getElementById("completionText").textContent =
+            percentage === 100
+                ? "Your profile is complete!"
+                : "Complete your profile!";
+    }
+
+
+    // 2. LIVE PROFILE COMPLETION
+
+    const profileFields = [
+        "name",
+        "phone",
+        "semester",
+        "careerGoal",
+        "skills"
+    ];
+
+    profileFields.forEach(function(id) {
+
+        document.getElementById(id).addEventListener(
+            "input",
+            updateProfileCompletion
+        );
+
+    });
+
+
+    // 3. UPDATE LEFT PROFILE CARD
+
+    function updateProfileCard(student) {
+
+        document.getElementById("profileName").textContent =
+            student.name || student.fullName || "Student Name";
+
+        document.getElementById("profileEmail").textContent =
+            student.email || studentEmail;
+
+        document.getElementById("profileSemester").textContent =
+            "Semester: " + (student.semester || "--");
+
+        document.getElementById("profileCareerGoal").textContent =
+            "Career Goal: " + (student.careerGoal || "--");
+    }
+
+
+    // 4. LOAD STUDENT PROFILE
+
+    async function loadProfile() {
+
+        if (!studentEmail) {
+
+            statusMessage.textContent =
+                "Student email is missing. Please login again.";
+
+            return;
+        }
+
+        try {
+
+            const response = await fetch(
+                "/students/email?email=" + encodeURIComponent(studentEmail),
+                {
+                    method: "GET",
+                    credentials: "same-origin"
+                }
+            );
+
+            const student = await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    student.message || "Unable to load profile."
+                );
+            }
+
+            document.getElementById("name").value =
+                student.name || student.fullName || "";
+
+            document.getElementById("email").value =
+                student.email || studentEmail;
+
+            document.getElementById("phone").value =
+                student.phone || "";
+
+            document.getElementById("semester").value =
+                student.semester || "";
+
+            document.getElementById("careerGoal").value =
+                student.careerGoal || "";
+
+            document.getElementById("skills").value =
+                student.skills || "";
+
+            updateProfileCard(student);
+
+            profileForm.hidden = false;
+
+            updateProfileCompletion();
+
+            statusMessage.textContent =
+                "Profile loaded successfully.";
+
+        } catch (error) {
+
+            statusMessage.textContent =
+                "Could not load profile: " + error.message;
+
+        }
+    }
+
+
+    // 5. UPDATE STUDENT PROFILE
+
+    profileForm.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        if (!studentEmail) {
+
+            statusMessage.textContent = "Please login again.";
+
+            return;
+        }
+
+        const updatedStudent = {
+
+            name: document.getElementById("name").value.trim(),
+
+            phone: document.getElementById("phone").value.trim(),
+
+            semester: document.getElementById("semester").value,
+
+            careerGoal:
+                document.getElementById("careerGoal").value.trim(),
+
+            skills:
+                document.getElementById("skills").value.trim()
+        };
+
+        try {
+
+            const response = await fetch(
+                "/students/update?email=" +
+                encodeURIComponent(studentEmail),
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    credentials: "same-origin",
+
+                    body: JSON.stringify(updatedStudent)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.message || "Profile update failed."
+                );
+            }
+
+            // UPDATE SIDEBAR
+
+            updateProfileCard({
+                ...updatedStudent,
+                email: studentEmail
+            });
+
+            // UPDATE COMPLETION
+
+            updateProfileCompletion();
+
+            statusMessage.textContent =
+                "Profile updated successfully!";
+
+        } catch (error) {
+
+            statusMessage.textContent =
+                "Could not update profile: " + error.message;
+
+        }
+
+    });
+
+
+    // 6. LOGOUT
+
+    function logout() {
+
+        localStorage.removeItem("studentEmail");
+        localStorage.removeItem("studentName");
+
+        sessionStorage.removeItem("studentEmail");
+        sessionStorage.removeItem("studentName");
+
+    }
+
+
+    // 7. PAGE LOAD
+
+    loadProfile();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Jobs - PlacementHub</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>PlacementHub - Manage Jobs</h1>
+
+    <nav>
+        <a href="applications.html">Applications</a>
+        <a href="dashboard.html">Dashboard</a>
+    </nav>
+</header>
+
+<main class="admin-jobs-container">
+
+    <h2>Manage Jobs</h2>
+
+    <!-- ADD NEW JOB -->
+    <section class="admin-job-form">
+
+        <h3>Add New Job</h3>
+
+        <form id="addJobForm">
+
+            <input
+                    type="text"
+                    id="title"
+                    placeholder="Job Title"
+                    required
+            >
+
+            <input
+                    type="text"
+                    id="companyName"
+                    placeholder="Company Name"
+                    required
+            >
+
+            <input
+                    type="text"
+                    id="location"
+                    placeholder="Job Location"
+                    maxlength="100"
+                    required
+            >
+
+            <input
+                    type="number"
+                    id="salary"
+                    placeholder="Salary"
+                    min="0.01"
+                    step="any"
+            >
+
+            <textarea
+                    id="description"
+                    placeholder="Job Description"
+                    maxlength="2000"
+            ></textarea>
+
+            <textarea
+                    id="skills"
+                    placeholder="Required Skills"
+                    maxlength="500"
+            ></textarea>
+
+            <button type="submit">Add Job</button>
+
+        </form>
+
+        <p id="jobMessage"></p>
+
+    </section>
+
+
+    <!-- EDIT JOB -->
+    <section class="admin-job-form" id="editJobSection" hidden>
+
+        <h3>Edit Job</h3>
+
+        <form id="editJobForm">
+
+            <input type="hidden" id="editJobId">
+
+            <input
+                    type="text"
+                    id="editTitle"
+                    placeholder="Job Title"
+                    required
+            >
+
+            <input
+                    type="text"
+                    id="editCompanyName"
+                    placeholder="Company Name"
+                    required
+            >
+
+            <input
+                    type="text"
+                    id="editLocation"
+                    placeholder="Job Location"
+                    maxlength="100"
+                    required
+            >
+
+            <input
+                    type="number"
+                    id="editSalary"
+                    placeholder="Salary"
+                    min="0.01"
+                    step="any"
+            >
+
+            <textarea
+                    id="editDescription"
+                    placeholder="Job Description"
+                    maxlength="2000"
+            ></textarea>
+
+            <textarea
+                    id="editSkills"
+                    placeholder="Required Skills"
+                    maxlength="500"
+            ></textarea>
+
+            <button type="submit">
+                Update Job
+            </button>
+
+            <button type="button" id="cancelEdit">
+                Cancel
+            </button>
+
+        </form>
+
+        <p id="editMessage"></p>
+
+    </section>
+
+
+    <!-- ALL JOBS -->
+    <section class="admin-all-jobs">
+
+        <h3>All Posted Jobs</h3>
+
+        <div id="jobsContainer">
+            <p>Loading jobs...</p>
+        </div>
+
+    </section>
+
+</main>
+
+<footer>
+    <p>© 2026 PlacementHub | Student Career & Placement Platform</p>
+</footer>
+
+<script src="admin-jobs.js"></script>
+
+</body>
+</html>

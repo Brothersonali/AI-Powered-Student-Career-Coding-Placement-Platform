@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlacementHub | Jobs</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h2>PlacementHub</h2>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="student-profile.html">Student Profile</a>
+        <a href="my-applications.html">My Applications</a>
+        <a href="login.html">Login</a>
+    </nav>
+</header>
+
+<main class="jobs-page">
+
+    <div class="section-heading">
+        <h1>Find Jobs</h1>
+        <p>Explore job opportunities and apply for your dream job.</p>
+    </div>
+
+    <div id="jobs-container" class="job-container jobs-list">
+        Loading jobs...
+    </div>
+
+</main>
+
+<footer>
+    <p>© 2026 PlacementHub | Student Career & Placement Platform</p>
+</footer>
+<script>
+    async function loadJobs() {
+        const container = document.getElementById("jobs-container");
+
+        try {
+            const response = await fetch("/jobs");
+
+            if (!response.ok) {
+                throw new Error("Jobs could not be loaded");
+            }
+
+            const jobs = await response.json();
+            container.innerHTML = "";
+
+            jobs.forEach(job => {
+                const card = document.createElement("div");
+                card.className = "job-card";
+
+                const title = document.createElement("h2");
+                title.textContent = job.title;
+
+                const company = document.createElement("p");
+                company.textContent = "Company: " + job.companyName;
+
+                const location = document.createElement("p");
+                location.textContent = "Location: " + job.location;
+
+                const salary = document.createElement("p");
+                salary.textContent = "Salary: " + job.salary;
+
+                const description = document.createElement("p");
+                description.textContent = job.description;
+
+                const applyButton = document.createElement("button");
+                applyButton.type = "button";
+                applyButton.textContent = "Apply Now";
+                applyButton.className = "btn";
+
+                const form = document.createElement("form");
+                form.style.display = "none";
+
+                const nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.placeholder = "Enter your name";
+                nameInput.required = true;
+
+                const phoneInput = document.createElement("input");
+                phoneInput.type = "tel";
+                phoneInput.placeholder = "Enter phone number";
+                phoneInput.required = true;
+
+                const resumeInput = document.createElement("input");
+                resumeInput.type = "url";
+                resumeInput.placeholder = "Enter resume link";
+                resumeInput.required = true;
+
+                const submitButton = document.createElement("button");
+                submitButton.type = "submit";
+                submitButton.textContent = "Submit Application";
+                submitButton.className = "btn";
+
+                const message = document.createElement("p");
+
+                form.append(
+                    nameInput,
+                    phoneInput,
+                    resumeInput,
+                    submitButton,
+                    message
+                );
+
+                applyButton.addEventListener("click", () => {
+                    form.style.display =
+                        form.style.display === "none" ? "block" : "none";
+                });
+
+                form.addEventListener("submit", async event => {
+                    event.preventDefault();
+
+                    submitButton.disabled = true;
+                    message.textContent = "Submitting...";
+
+                    try {
+                        const applicationResponse = await fetch("/applications", {
+                            method: "POST",
+                            credentials: "same-origin",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                studentName: nameInput.value.trim(),
+                                email: sessionStorage.getItem("studentEmail"),
+                                phone: phoneInput.value.trim(),
+                                resumeLink: resumeInput.value.trim(),
+                                jobId: job.id
+                            })
+                        });
+
+                        if (applicationResponse.status === 401) {
+                            throw new Error("Please login as a student first.");
+                        }
+
+                        if (!applicationResponse.ok) {
+                            throw new Error("Application submission failed.");
+                        }
+
+                        message.textContent = "Application submitted successfully!";
+                        form.reset();
+                        form.style.display = "none";
+
+                    } catch (error) {
+                        message.textContent = error.message;
+                    } finally {
+                        submitButton.disabled = false;
+                    }
+                });
+
+                card.append(
+                    title,
+                    company,
+                    location,
+                    salary,
+                    description,
+                    applyButton,
+                    form
+                );
+
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            container.textContent = "Unable to load jobs.";
+            console.error(error);
+        }
+    }
+
+    loadJobs();
+</script>
+
+</body>
+</html>

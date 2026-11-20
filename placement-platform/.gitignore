@@ -37,9 +37,6 @@ build/
 **/.env
 **/application-local.properties
 
-# Do not upload frontend files
-/src/main/resources/static/
-
 # Protect local database credentials
 /src/main/resources/application.properties
 

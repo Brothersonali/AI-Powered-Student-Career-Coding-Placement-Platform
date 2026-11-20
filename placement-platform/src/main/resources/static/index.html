@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlacementHub | Student Placement Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <h2 class="logo">PlacementHub</h2>
+    <div class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#jobs">Jobs</a>
+        <a href="#career">Career</a>
+        <a href="login.html">Student Login</a>
+        <a href="student-profile.html">My Profile</a>
+    </div>
+</nav>
+
+<section class="hero" id="home">
+    <span class="tag">YOUR CAREER STARTS HERE</span>
+    <h1>Build Your Career With Us</h1>
+    <p>Discover job opportunities, explore career paths, and take your first step toward a successful career.</p>
+    <a href="#jobs" class="btn">Explore Jobs</a>
+</section>
+
+<main>
+    <section class="jobs" id="jobs">
+        <div class="section-heading">
+            <span class="tag">OPPORTUNITIES FOR YOU</span>
+            <h2>Available Jobs</h2>
+            <p>Find your next opportunity by searching for a job title.</p>
+        </div>
+
+        <div class="job-search">
+            <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search job title, e.g. Java Developer"
+                    aria-label="Search by job title"
+            >
+            <button type="button" id="searchBtn" class="btn">Search</button>
+            <button type="button" id="resetBtn" class="btn btn-light">Show All</button>
+        </div>
+
+        <p id="resultCount" class="result-count">Loading jobs...</p>
+        <div class="add-job-section">
+        <h2>Add a New Job</h2>
+
+        <form id="addJobForm">
+            <input type="text" id="jobTitle"
+                   placeholder="Job Title" required>
+
+            <input type="text" id="companyName"
+                   placeholder="Company Name" required>
+
+            <input type="text" id="jobLocation"
+                   placeholder="Location">
+
+            <input type="number" id="jobSalary"
+                   placeholder="Salary (e.g. 45000)"
+                   min="1" required>
+
+            <input type="text" id="jobSkills"
+                   placeholder="Skills (Java, Spring Boot)">
+
+            <textarea id="jobDescription"
+                      placeholder="Job Description"></textarea>
+
+            <button type="submit" class="btn">Add Job</button>
+            <p id="formMessage"></p>
+        </form>
+        </div>
+        <div class="job-container" id="jobContainer">
+            <p class="message">Loading jobs...</p>
+        </div>
+    </section>
+
+    <section class="career" id="career">
+        <h2>Prepare for Your Dream Career</h2>
+        <p>Build your skills, prepare for interviews, and move closer to your placement goals.</p>
+        <a href="#jobs" class="btn">Explore Opportunities</a>
+    </section>
+</main>
+
+<footer>
+    <p>© 2026 PlacementHub | Student Career & Placement Platform</p>
+</footer>
+
+<script src="script.js?v=2"></script>
+</body>
+</html>

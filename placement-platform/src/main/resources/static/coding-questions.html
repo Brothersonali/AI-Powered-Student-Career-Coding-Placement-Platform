@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Questions | Placement Platform</title>
+
+    <link rel="stylesheet" href="coding-questions.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="brand-icon">⌘</span>
+        <h2>Placement Platform</h2>
+    </div>
+
+    <a href="dashboard.html" class="dashboard-btn">
+        ← Dashboard
+    </a>
+</nav>
+
+<section class="coding-section">
+
+    <div class="hero-section">
+        <span class="hero-tag">CODING PRACTICE</span>
+
+        <h1>
+            Level Up Your
+            <span>Programming Skills</span>
+        </h1>
+
+        <p>
+            Practice coding questions, improve problem-solving
+            and prepare yourself for technical interviews.
+        </p>
+    </div>
+
+    <div class="section-heading">
+        <div>
+            <h2>Explore Coding Questions</h2>
+            <p>Choose a problem and start solving.</p>
+        </div>
+    </div>
+
+    <div class="filter-section">
+
+        <input
+                type="text"
+                id="searchInput"
+                placeholder="⌕  Search coding questions..."
+        >
+
+        <select id="difficultyFilter">
+            <option value="">All Difficulty</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+        </select>
+
+    </div>
+
+    <div id="questionList">
+        <!-- Questions will appear here -->
+    </div>
+
+</section>
+
+<section class="solve-section" id="solveSection" style="display:none;">
+
+    <div class="section-heading">
+        <div>
+            <span class="hero-tag">CODE EDITOR</span>
+            <h2>Solve Question</h2>
+            <p>Write, test and submit your solution.</p>
+        </div>
+    </div>
+
+    <label>Select Language</label>
+
+    <select id="language">
+        <option value="java">Java</option>
+        <option value="python">Python</option>
+        <option value="cpp">C++</option>
+    </select>
+
+    <label for="stdinInput">Custom Input (Optional)</label>
+
+    <textarea
+            id="stdinInput"
+            placeholder="Enter your input here..."
+    ></textarea>
+
+    <label for="codeEditor">Write Your Code</label>
+
+    <textarea
+            id="codeEditor"
+            placeholder="Write your code here..."
+    ></textarea>
+
+    <button id="submitCode">Run & Submit Code</button>
+
+    <div class="output-box">
+        <h3>Execution Result</h3>
+        <p id="submitMessage">Output will appear here...</p>
+    </div>
+
+</section>
+
+<script src="coding-questions.js"></script>
+
+</body>
+</html>

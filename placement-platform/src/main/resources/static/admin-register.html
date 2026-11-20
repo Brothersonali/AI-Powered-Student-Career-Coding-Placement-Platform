@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Add New Admin | PlacementHub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="login-page">
+
+<header>
+    <h2>PlacementHub</h2>
+    <nav>
+        <a href="applications.html">Admin Dashboard</a>
+    </nav>
+</header>
+
+<main class="container">
+    <section class="login-card form-card">
+
+        <h1 class="h3 mb-3">Register New Admin</h1>
+
+        <form id="adminRegisterForm">
+
+            <label for="name">Admin Name</label>
+            <input
+                    type="text"
+                    id="name"
+                    required
+            >
+
+            <label for="email">Email</label>
+            <input
+                    type="email"
+                    id="email"
+                    required
+            >
+
+            <label for="password">Password</label>
+            <input
+                    type="password"
+                    id="password"
+                    minlength="8"
+                    required
+            >
+
+            <button type="submit" id="registerButton">
+                Register Admin
+            </button>
+
+        </form>
+
+        <p id="message" role="status" aria-live="polite"></p>
+
+        <a href="applications.html">Back to Dashboard</a>
+
+    </section>
+</main>
+
+<script>
+    const form = document.getElementById("adminRegisterForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("registerButton");
+
+    form.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        button.disabled = true;
+        message.textContent = "Registering Admin...";
+
+        try {
+            const response = await fetch("/auth/admin/register", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password
+                })
+            });
+
+            const responseText = await response.text();
+
+            let result = {};
+
+            try {
+                result = responseText ? JSON.parse(responseText) : {};
+            } catch {
+                result = responseText;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    typeof result === "string"
+                        ? result
+                        : result.message || "Admin registration failed."
+                );
+            }
+            message.textContent =
+                "Admin registered successfully!";
+
+            form.reset();
+
+        } catch (error) {
+            message.textContent = error.message;
+        } finally {
+            button.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>

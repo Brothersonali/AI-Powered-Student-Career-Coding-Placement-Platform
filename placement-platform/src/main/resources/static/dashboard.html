@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Dashboard | PlacementHub</title>
+
+    <link rel="stylesheet" href="/style.css?v=2">
+<!--</head>-->
+
+<body style="outline: 6px solid red;">
+
+<header>
+    <h2>PlacementHub</h2>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="index.html#jobs">Jobs</a>
+        <a href="/student-profile.html">My Profile</a>
+        <a href="#" onclick="logout(); return false;">Logout</a>
+    </nav>
+</header>
+
+
+<main>
+
+    <!-- MODERN WELCOME SECTION -->
+
+    <section class="hero dashboard-hero">
+
+        <div class="welcome-content">
+
+            <span class="tag">STUDENT ZONE</span>
+
+            <h1 id="welcomeMessage">
+                Welcome to Your Dashboard
+            </h1>
+
+            <p>
+                Welcome back! Keep learning, keep practicing,
+                and take one step closer to your dream placement.
+            </p>
+
+
+
+        </div>
+
+        <div class="welcome-icon">
+            <span>🎓</span>
+        </div>
+
+    </section>
+
+    <!-- FEATURED CODING CHALLENGE -->
+
+    <section class="practice-feature-section">
+
+        <div class="practice-feature-card">
+
+            <div class="practice-feature-content">
+
+            <span class="practice-label">
+                ✨ YOUR NEXT CHALLENGE
+            </span>
+
+                <h2>
+                    Ready to Level Up Your Coding Skills?
+                </h2>
+
+                <p>
+                    Practice coding questions, improve your
+                    problem-solving skills and prepare for
+                    your dream placement.
+                </p>
+
+                <a href="/coding-questions.html"
+                   class="practice-start-btn">
+                    Start Practicing
+                    <span>→</span>
+                </a>
+
+            </div>
+
+            <div class="practice-visual">
+                <div class="code-icon"> &lt;/&gt; </div>
+                <div class="code-symbol">💻</div>
+                <span class="floating-star">✦</span>
+            </div>
+
+        </div>
+
+    </section>
+    <!-- CODING PROGRESS SECTION -->
+
+    <section class="jobs dashboard-links">
+
+        <div class="section-heading">
+            <h2>Coding Progress</h2>
+            <p>Track your coding preparation journey.</p>
+        </div>
+
+        <div class="job-container">
+
+            <article class="job-card coding-stat-card total-card">
+                <div class="stat-icon">📚</div>
+                <h3>Total Questions</h3>
+                <h2 id="totalQuestions">0</h2>
+                <p>Total coding questions available.</p>
+            </article>
+
+            <article class="job-card coding-stat-card solved-card">
+                <div class="stat-icon">🏆</div>
+                <h3>Solved Questions</h3>
+                <h2 id="solvedQuestions">0</h2>
+                <p>Questions successfully solved.</p>
+            </article>
+
+            <article class="job-card coding-stat-card remaining-card">
+                <div class="stat-icon">🎯</div>
+                <h3>Remaining Questions</h3>
+                <h2 id="remainingQuestions">0</h2>
+                <p>Questions left to solve.</p>
+            </article>
+
+        </div>
+
+        <div class="job-card coding-progress-bar">
+
+            <h3>Overall Coding Progress</h3>
+
+            <h2 id="progressPercentage">0%</h2>
+
+            <div class="progress-track">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+
+            <p>
+                Keep practicing to improve your coding progress!
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- APPLICATIONS SECTION -->
+
+    <section class="applications-section">
+
+        <h2>My Applications</h2>
+
+        <p>Track your job application status here.</p>
+
+        <a href="/my-applications.html" class="btn">
+            View All Applications
+        </a>
+
+        <div id="myApplications">
+            Loading applications...
+        </div>
+
+    </section>
+
+
+    <!-- MY DASHBOARD SECTION -->
+
+    <section class="jobs dashboard-links">
+
+        <div class="section-heading">
+            <h2>My Dashboard</h2>
+            <p>Your career activities in one place.</p>
+        </div>
+
+        <div class="job-container">
+
+            <article class="job-card">
+                <h3>My Profile</h3>
+                <p>View and manage your student details.</p>
+                <a href="/student-profile.html" class="btn">
+                    View Profile
+                </a>
+            </article>
+
+            <article class="job-card">
+                <h3>Explore Jobs</h3>
+                <p>Discover job opportunities for your career.</p>
+                <a href="index.html#jobs" class="btn">
+                    Find Jobs
+                </a>
+            </article>
+
+            <article class="job-card">
+                <h3>Career Roadmap</h3>
+                <p>Explore your career preparation journey.</p>
+                <a href="index.html#career" class="btn">
+                    Explore Career
+                </a>
+            </article>
+
+            <article class="job-card">
+                <h3>Change Password</h3>
+                <p>Update your account password securely.</p>
+                <a href="/change-password.html" class="btn">
+                    Change Password
+                </a>
+            </article>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- FOOTER -->
+
+<footer>
+    <p>
+        © 2026 PlacementHub | Student Career & Placement Platform
+    </p>
+</footer>
+
+
+<script>
+
+    // STUDENT INFORMATION
+
+    const params = new URLSearchParams(window.location.search);
+
+    const studentEmail =
+        params.get("email") ||
+        localStorage.getItem("studentEmail") ||
+        sessionStorage.getItem("studentEmail");
+
+    const studentName =
+        localStorage.getItem("studentName") ||
+        sessionStorage.getItem("studentName");
+
+    if (studentName) {
+        document.getElementById("welcomeMessage").textContent =
+            "Welcome, " + studentName + "!";
+    }
+
+
+    // OPEN PROFILE
+
+    function openProfile() {
+
+        const email =
+            new URLSearchParams(window.location.search).get("email") ||
+            localStorage.getItem("studentEmail") ||
+            sessionStorage.getItem("studentEmail");
+
+        if (!email) {
+            alert("Student email not found. Please login again.");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        window.location.href =
+            "/student-profile.html?email=" + encodeURIComponent(email);
+    }
+
+
+    // LOGOUT
+
+    async function logout() {
+
+        try {
+            await fetch("/auth/logout", {
+                method: "POST",
+                credentials: "same-origin"
+            });
+
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+
+        localStorage.removeItem("studentEmail");
+        localStorage.removeItem("studentName");
+
+        sessionStorage.removeItem("studentEmail");
+        sessionStorage.removeItem("studentName");
+
+        window.location.href = "/login.html";
+    }
+
+
+    // LOAD MY APPLICATIONS
+
+    async function loadMyApplications() {
+
+        const container =
+            document.getElementById("myApplications");
+
+        try {
+
+            const response = await fetch("/applications/my", {
+                method: "GET",
+                credentials: "same-origin"
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                container.textContent =
+                    "Please login again to view your applications.";
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("Could not load applications.");
+            }
+
+            const applications = await response.json();
+
+            if (!Array.isArray(applications) || applications.length === 0) {
+
+                container.textContent =
+                    "You have not applied for any jobs yet.";
+
+                return;
+            }
+
+            container.replaceChildren();
+
+            applications.forEach(application => {
+
+                const card = document.createElement("article");
+                card.className = "job-card";
+
+                const title = document.createElement("h3");
+
+                title.textContent =
+                    "Application for Job #" +
+                    (application.jobId ?? "N/A");
+
+                const status = document.createElement("p");
+
+                status.textContent =
+                    "Status: " +
+                    (application.status || "Pending");
+
+                const date = document.createElement("p");
+
+                date.textContent =
+                    "Applied on: " +
+                    (application.appliedAt
+                        ? new Date(application.appliedAt).toLocaleDateString()
+                        : "Date unavailable");
+
+                card.append(title, status, date);
+
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+
+            console.error("Applications error:", error);
+
+            container.textContent =
+                "Unable to load applications. Please refresh the page.";
+        }
+    }
+
+
+    // LOAD CODING PROGRESS
+
+    async function loadCodingProgress() {
+
+        try {
+
+            const [questionsResponse, solvedResponse] =
+                await Promise.all([
+
+                    fetch("http://localhost:8080/api/coding/questions", {
+                        credentials: "include"
+                    }),
+
+                    fetch("http://localhost:8080/api/coding/solved", {
+                        credentials: "include"
+                    })
+
+                ]);
+
+            if (!questionsResponse.ok || !solvedResponse.ok) {
+                throw new Error("Unable to load coding progress.");
+            }
+
+            const questions = await questionsResponse.json();
+            const solvedIds = await solvedResponse.json();
+
+            const total = questions.length;
+
+            const solved = new Set(
+                solvedIds.map(id => Number(id))
+            ).size;
+
+            const remaining = Math.max(0, total - solved);
+
+            const percentage = total === 0
+                ? 0
+                : Math.round((solved / total) * 100);
+
+            // UPDATE DASHBOARD CARDS
+
+            document.getElementById("totalQuestions").textContent =
+                total;
+
+            document.getElementById("solvedQuestions").textContent =
+                solved;
+
+            document.getElementById("remainingQuestions").textContent =
+                remaining;
+
+            // UPDATE PERCENTAGE
+
+            document.getElementById("progressPercentage").textContent =
+                percentage + "%";
+
+            // UPDATE PROGRESS BAR
+
+            document.getElementById("progressFill").style.width =
+                percentage + "%";
+
+        } catch (error) {
+
+            console.error("Coding progress error:", error);
+
+        }
+    }
+
+
+    // PAGE LOAD
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        loadMyApplications();
+
+        loadCodingProgress();
+
+    });
+
+
+    // BROWSER CACHE REFRESH
+
+    window.addEventListener("pageshow", function(event) {
+
+        if (event.persisted) {
+            window.location.reload();
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

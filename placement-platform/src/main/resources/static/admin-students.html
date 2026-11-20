@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Management - PlacementHub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="admin-header">
+    <h1>PlacementHub</h1>
+    <p>Student Management Dashboard</p>
+    <a href="applications.html">Back to Applications</a>
+    <button type="button" id="adminLogoutBtn">Logout</button>
+</header>
+
+<main class="applications-page admin-applications-page">
+
+    <h2>All Students</h2>
+    <p id="studentCount">Loading students...</p>
+
+    <div class="application-filters">
+        <input type="text"
+               id="studentSearch"
+               placeholder="Search student by name or email...">
+        <button type="button" id="resetSearch" class="btn">
+            Reset Search
+        </button>
+    </div>
+
+    <p id="filterResultCount"></p>
+
+    <div id="studentsList" class="admin-applications-list"></div>
+
+</main>
+<script>
+    let allStudents = [];
+
+    async function loadStudents() {
+        const list = document.getElementById("studentsList");
+        const count = document.getElementById("studentCount");
+
+        try {
+            const response = await fetch("/admin/students", {
+                credentials: "same-origin"
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                window.location.href = "/admin-login.html";
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("Unable to load students");
+            }
+
+            allStudents = await response.json();
+
+            count.textContent = "Total Students: " + allStudents.length;
+
+            renderStudents();
+
+        } catch (error) {
+            count.textContent = "Unable to load students.";
+            list.textContent = "Students load nahi hue. Please try again.";
+            console.error(error);
+        }
+    }
+
+    function renderStudents() {
+        const list = document.getElementById("studentsList");
+
+        const searchText = document.getElementById("studentSearch")
+            .value.trim().toLowerCase();
+
+        list.innerHTML = "";
+
+        const filteredStudents = allStudents.filter(student => {
+            const searchableText = [
+                student.name,
+                student.email
+            ].join(" ").toLowerCase();
+
+            return searchableText.includes(searchText);
+        });
+
+        document.getElementById("filterResultCount").textContent =
+            "Showing " + filteredStudents.length +
+            " of " + allStudents.length + " students";
+
+        if (filteredStudents.length === 0) {
+            list.textContent = "No students found.";
+            return;
+        }
+
+        filteredStudents.forEach(student => {
+            const card = document.createElement("article");
+            card.className = "job-card";
+
+            const name = document.createElement("h3");
+            name.textContent = student.name || "N/A";
+
+            const email = document.createElement("p");
+            email.textContent = "Email: " + (student.email || "N/A");
+
+            const phone = document.createElement("p");
+            phone.textContent = "Phone: " + (student.phone || "N/A");
+
+            const semester = document.createElement("p");
+            semester.textContent =
+                "Semester: " + (student.semester || "N/A");
+
+            const careerGoal = document.createElement("p");
+            careerGoal.textContent =
+                "Career Goal: " + (student.careerGoal || "Not added");
+
+            const skills = document.createElement("p");
+            skills.textContent =
+                "Skills: " + (student.skills || "Not added");
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.textContent = "Delete Student";
+            deleteButton.className = "btn";
+
+            deleteButton.addEventListener("click", async function() {
+                const confirmDelete = confirm(
+                    "Are you sure you want to delete " + student.name + "?"
+                );
+
+                if (!confirmDelete) return;
+
+                try {
+                    const response = await fetch(
+                        "/admin/students/" + student.id,
+                        {
+                            method: "DELETE",
+                            credentials: "same-origin"
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("Student deletion failed.");
+                    }
+
+                    alert("Student deleted successfully!");
+                    await loadStudents();
+
+                } catch (error) {
+                    alert("Unable to delete student. Please try again.");
+                    console.error(error);
+                }
+            });
+
+            card.append(
+                name,
+                email,
+                phone,
+                semester,
+                careerGoal,
+                skills,
+                deleteButton
+            );
+
+            list.appendChild(card);
+        });
+    }
+
+    document.getElementById("studentSearch")
+        .addEventListener("input", renderStudents);
+
+    document.getElementById("resetSearch")
+        .addEventListener("click", function() {
+            document.getElementById("studentSearch").value = "";
+            renderStudents();
+        });
+
+    document.getElementById("adminLogoutBtn")
+        .addEventListener("click", async function() {
+            if (!confirm("Are you sure you want to logout?")) return;
+
+            try {
+                const response = await fetch("/auth/admin/logout", {
+                    method: "POST",
+                    credentials: "same-origin"
+                });
+
+                if (response.ok) {
+                    window.location.href = "/admin-login.html";
+                } else {
+                    alert("Logout failed. Please try again.");
+                }
+
+            } catch (error) {
+                alert("Something went wrong during logout.");
+            }
+        });
+
+    loadStudents();
+</script>
+</body>
+</html>

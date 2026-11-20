@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications Dashboard - PlacementHub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="admin-header">
+    <h1>PlacementHub</h1>
+    <p>Student Applications Dashboard</p>
+    <a href="index.html">Back to Jobs</a>
+    <a href="admin-register.html">Add New Admin</a>
+    <a href="admin-students.html">Manage Students</a>
+    <button type="button"
+            id="adminLogoutBtn">Logout</button>
+</header>
+
+<main class="applications-page admin-applications-page">
+    <h2>All Applications</h2>
+    <p id="applicationCount">Loading applications...</p>
+
+    <!-- Status Summary -->
+    <div class="status-summary">
+        <div class="status-card pending-card">
+            <h3>Pending</h3>
+            <p id="pendingCount">0</p>
+        </div>
+        <div class="status-card shortlisted-card">
+            <h3>Shortlisted</h3>
+            <p id="shortlistedCount">0</p>
+        </div>
+        <div class="status-card rejected-card">
+            <h3>Rejected</h3>
+            <p id="rejectedCount">0</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Analytics -->
+    <section class="analytics-section">
+        <h2>Placement Analytics</h2>
+
+        <div class="analytics-cards">
+            <div class="analytics-card total-analytics">
+                <p>Total Applications</p>
+                <h3 id="totalAnalyticsCount">0</h3>
+            </div>
+
+            <div class="analytics-card shortlisted-analytics">
+                <p>Shortlisted Rate</p>
+                <h3 id="shortlistedRate">0%</h3>
+            </div>
+        </div>
+
+        <div class="analytics-chart">
+            <h3>Application Status Overview</h3>
+
+            <div class="chart-row">
+                <div class="chart-label">
+                    <span>Pending</span>
+                    <span id="analyticsPendingCount">0</span>
+                </div>
+                <div class="chart-track">
+                    <div id="pendingBar"
+                         class="chart-bar pending-bar"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-label">
+                    <span>Shortlisted</span>
+                    <span id="analyticsShortlistedCount">0</span>
+                </div>
+                <div class="chart-track">
+                    <div id="shortlistedBar"
+                         class="chart-bar shortlisted-bar"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-label">
+                    <span>Rejected</span>
+                    <span id="analyticsRejectedCount">0</span>
+                </div>
+                <div class="chart-track">
+                    <div id="rejectedBar"
+                         class="chart-bar rejected-bar"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CSV Export -->
+    <div class="export-section">
+        <button type="button" id="exportCsvBtn" class="btn">
+            Export Applications to CSV
+        </button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="application-filters">
+        <input type="text" id="applicationSearch"
+               placeholder="Search student, job or company...">
+
+        <select id="statusFilter">
+            <option value="All">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Shortlisted">Shortlisted</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+
+        <button type="button" id="resetFilters" class="btn">
+            Reset Filters
+        </button>
+    </div>
+
+    <p id="filterResultCount"></p>
+    <div id="applicationsList"
+    class="admin-applications-list"></div>
+</main>
+
+<script>
+    let allApplications = [];
+    let jobsMap = new Map();
+
+    function normalizedStatus(status) {
+        const value = String(status || "").trim().toLowerCase();
+
+        if (value === "shortlisted") return "Shortlisted";
+        if (value === "rejected") return "Rejected";
+        return "Pending";
+    }
+
+    // Update status counters and analytics
+    function updateCounters() {
+        const pending = allApplications.filter(
+            app => normalizedStatus(app.status) === "Pending"
+        ).length;
+
+        const shortlisted = allApplications.filter(
+            app => normalizedStatus(app.status) === "Shortlisted"
+        ).length;
+
+        const rejected = allApplications.filter(
+            app => normalizedStatus(app.status) === "Rejected"
+        ).length;
+
+        const total = allApplications.length;
+
+        document.getElementById("pendingCount").textContent = pending;
+        document.getElementById("shortlistedCount").textContent = shortlisted;
+        document.getElementById("rejectedCount").textContent = rejected;
+
+        document.getElementById("totalAnalyticsCount").textContent = total;
+
+        const rate = total === 0
+            ? 0
+            : Math.round((shortlisted / total) * 100);
+
+        document.getElementById("shortlistedRate").textContent = rate + "%";
+
+        document.getElementById("analyticsPendingCount").textContent = pending;
+        document.getElementById("analyticsShortlistedCount").textContent = shortlisted;
+        document.getElementById("analyticsRejectedCount").textContent = rejected;
+
+        document.getElementById("pendingBar").style.width =
+            (total === 0 ? 0 : pending / total * 100) + "%";
+
+        document.getElementById("shortlistedBar").style.width =
+            (total === 0 ? 0 : shortlisted / total * 100) + "%";
+
+        document.getElementById("rejectedBar").style.width =
+            (total === 0 ? 0 : rejected / total * 100) + "%";
+    }
+
+    // Load applications and jobs from backend
+    async function loadApplications() {
+        const list = document.getElementById("applicationsList");
+        const count = document.getElementById("applicationCount");
+
+        try {
+            const [applicationsResponse, jobsResponse] = await Promise.all([
+                fetch("http://localhost:8080/applications",{
+                    credentials:"same-origin"
+                }),
+                fetch("http://localhost:8080/jobs")
+            ]);
+
+            if (!applicationsResponse.ok || !jobsResponse.ok) {
+                throw new Error("Unable to load applications or jobs");
+            }
+
+            const applications = await applicationsResponse.json();
+            const jobsData = await jobsResponse.json();
+
+            allApplications = Array.isArray(applications)
+                ? applications
+                : [];
+
+            const jobs = Array.isArray(jobsData)
+                ? jobsData
+                : (jobsData.content || []);
+
+            jobsMap = new Map(
+                jobs.map(job => [String(job.id), job])
+            );
+
+            count.textContent =
+                "Total Applications: " + allApplications.length;
+
+            updateCounters();
+            renderApplications();
+
+        } catch (error) {
+            count.textContent = "Unable to load applications.";
+            list.textContent =
+                "Applications load nahi hui. Check karo backend localhost:8080 par chal raha hai.";
+            console.error("Applications error:", error);
+        }
+    }
+
+    // Display applications with search and status filter
+    function renderApplications() {
+        const list = document.getElementById("applicationsList");
+        const searchText = document.getElementById("applicationSearch")
+            .value.trim().toLowerCase();
+
+        const selectedStatus =
+            document.getElementById("statusFilter").value;
+
+        list.innerHTML = "";
+
+        const filteredApplications = allApplications.filter(app => {
+            const job = jobsMap.get(String(app.jobId));
+            const status = normalizedStatus(app.status);
+
+            const searchableText = [
+                app.studentName,
+                app.email,
+                app.phone,
+                job?.title,
+                job?.companyName
+            ].join(" ").toLowerCase();
+
+            return searchableText.includes(searchText) &&
+                (selectedStatus === "All" || status === selectedStatus);
+        });
+
+        document.getElementById("filterResultCount").textContent =
+            "Showing " + filteredApplications.length +
+            " of " + allApplications.length + " applications";
+
+        if (filteredApplications.length === 0) {
+            list.textContent = "No matching applications found.";
+            return;
+        }
+
+        filteredApplications.forEach(app => {
+            const card = document.createElement("article");
+            card.className = "job-card";
+
+            const name = document.createElement("h3");
+            name.textContent = app.studentName || "Unknown Student";
+
+            const email = document.createElement("p");
+            email.textContent = "Email: " + (app.email || "N/A");
+
+            const phone = document.createElement("p");
+            phone.textContent = "Phone: " + (app.phone || "N/A");
+
+            const appliedDate = document.createElement("p");
+            appliedDate.className = "application-date";
+
+            if (app.appliedAt) {
+                const date = new Date(app.appliedAt);
+                appliedDate.textContent = "Applied On: " +
+                    date.toLocaleString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    });
+            } else {
+                appliedDate.textContent = "Applied On: Not available";
+            }
+
+            const job = document.createElement("p");
+            const jobDetails = jobsMap.get(String(app.jobId));
+
+            job.textContent = jobDetails
+                ? "Job: " + (jobDetails.title || "Untitled Job") +
+                " | Company: " +
+                (jobDetails.companyName || "Not specified")
+                : "Job details unavailable (Job ID: " +
+                (app.jobId ?? "N/A") + ")";
+
+            const statusLabel = document.createElement("label");
+            statusLabel.textContent = "Application Status: ";
+
+            const statusSelect = document.createElement("select");
+
+            ["Pending", "Shortlisted", "Rejected"].forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                statusSelect.appendChild(option);
+            });
+
+            statusSelect.value = normalizedStatus(app.status);
+
+            const saveButton = document.createElement("button");
+            saveButton.type = "button";
+            saveButton.className = "status-save-btn";
+            saveButton.textContent = "Save Status";
+
+            saveButton.addEventListener("click", async () => {
+                saveButton.disabled = true;
+                saveButton.textContent = "Saving...";
+
+                try {
+                    const response = await fetch(
+                        "http://localhost:8080/applications/" +
+                        app.id + "/status",
+                        {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                status: statusSelect.value
+                            })
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("HTTP " + response.status);
+                    }
+
+                    app.status = statusSelect.value;
+                    updateCounters();
+                    renderApplications();
+
+                    alert("Status updated successfully!");
+
+                } catch (error) {
+                    console.error("Status update error:", error);
+                    alert("Status update nahi hua. Please try again.");
+                    saveButton.disabled = false;
+                    saveButton.textContent = "Save Status";
+                }
+            });
+
+            card.append(
+                name,
+                email,
+                phone,
+                appliedDate,
+                job,
+                statusLabel,
+                statusSelect
+            );
+
+            const actions = document.createElement("div");
+            actions.className = "application-actions";
+            actions.appendChild(saveButton);
+
+            if (app.resumeLink) {
+                const resume = document.createElement("a");
+                resume.href = app.resumeLink;
+                resume.textContent = "View Resume";
+                resume.target = "_blank";
+                resume.rel = "noopener noreferrer";
+                actions.appendChild(resume);
+            }
+
+            card.appendChild(actions);
+            list.appendChild(card);
+        });
+    }
+
+    // Export currently filtered applications to CSV
+    function exportApplicationsToCSV() {
+        const searchText = document.getElementById("applicationSearch")
+            .value.trim().toLowerCase();
+
+        const selectedStatus =
+            document.getElementById("statusFilter").value;
+
+        const filteredApplications = allApplications.filter(app => {
+            const job = jobsMap.get(String(app.jobId));
+            const status = normalizedStatus(app.status);
+
+            const searchableText = [
+                app.studentName,
+                app.email,
+                app.phone,
+                job?.title,
+                job?.companyName
+            ].join(" ").toLowerCase();
+
+            return searchableText.includes(searchText) &&
+                (selectedStatus === "All" || status === selectedStatus);
+        });
+
+        if (filteredApplications.length === 0) {
+            alert("Export karne ke liye koi application nahi mili.");
+            return;
+        }
+
+        const headers = [
+            "Student Name",
+            "Email",
+            "Phone",
+            "Job Title",
+            "Company",
+            "Status",
+            "Applied Date"
+        ];
+
+        function escapeCSV(value) {
+            let text = String(value ?? "");
+
+            // Reduce spreadsheet formula-injection risk
+            if (/^[\s]*[=+\-@]/.test(text)) {
+                text = "'" + text;
+            }
+
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+
+        const rows = filteredApplications.map(app => {
+            const job = jobsMap.get(String(app.jobId));
+
+            const appliedDate = app.appliedAt
+                ? new Date(app.appliedAt).toLocaleString("en-IN")
+                : "Not available";
+
+            return [
+                app.studentName || "",
+                app.email || "",
+                app.phone || "",
+                job?.title || "Job details unavailable",
+                job?.companyName || "",
+                normalizedStatus(app.status),
+                appliedDate
+            ];
+        });
+
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(escapeCSV).join(","))
+            .join("\r\n");
+
+        const blob = new Blob(["\uFEFF" + csvContent], {
+            type: "text/csv;charset=utf-8;"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "PlacementHub_Applications.csv";
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // Button and filter event listeners
+    document.getElementById("exportCsvBtn")
+        .addEventListener("click", exportApplicationsToCSV);
+
+    document.getElementById("applicationSearch")
+        .addEventListener("input", renderApplications);
+
+    document.getElementById("statusFilter")
+        .addEventListener("change", renderApplications);
+
+    document.getElementById("resetFilters")
+        .addEventListener("click", function() {
+            document.getElementById("applicationSearch").value = "";
+            document.getElementById("statusFilter").value = "All";
+            renderApplications();
+        });
+
+    loadApplications();
+    // Admin Logout
+    document.getElementById("adminLogoutBtn")
+        .addEventListener("click", async function() {
+
+            const confirmLogout = confirm("Are you sure you want to logout?");
+
+            if (!confirmLogout) {
+                return;
+            }
+
+            try {
+                const response = await fetch("/auth/admin/logout", {
+                    method: "POST",
+                    credentials: "same-origin"
+                });
+
+                if (response.ok) {
+                    alert("Admin logout successful!");
+                    window.location.href = "/admin-login.html";
+                } else {
+                    alert("Logout failed. Please try again.");
+                }
+
+            } catch (error) {
+                console.error("Logout error:", error);
+                alert("Something went wrong during logout.");
+            }
+        });
+</script>
+
+</body>
+</html>

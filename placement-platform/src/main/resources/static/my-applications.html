@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications | PlacementHub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h2>PlacementHub</h2>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="index.html#jobs">Jobs</a>
+        <a href="login.html">Logout</a>
+    </nav>
+</header>
+
+<main class="jobs applications-page my-applications-page">
+    <div class="section-heading">
+        <h1>My Applications</h1>
+        <p>Track your job applications and their current status.</p>
+    </div>
+
+    <div id="applications" class="job-container
+my-applications-list">
+        Loading...
+    </div>
+</main>
+
+<footer>
+    <p>© 2026 PlacementHub | Student Career & Placement Platform</p>
+</footer>
+
+<script>
+    async function loadApplications() {
+        const container = document.getElementById("applications");
+
+        container.textContent = "Loading applications...";
+
+        try {
+            const [appResponse, jobResponse] = await Promise.all([
+                fetch("/applications/my", { credentials: "same-origin" }),
+                fetch("/jobs", { credentials: "same-origin" })
+            ]);
+
+            if (!appResponse.ok || !jobResponse.ok) {
+                throw new Error("Data loading failed");
+            }
+
+            const applications = await appResponse.json();
+            const jobs = await jobResponse.json();
+
+            if (!Array.isArray(applications) || !Array.isArray(jobs)) {
+                throw new Error("Invalid data received");
+            }
+
+            container.innerHTML = "";
+
+            if (applications.length === 0) {
+                container.textContent = "You haven't applied for any jobs yet.";
+                return;
+            }
+
+            applications.forEach(app => {
+                const job = jobs.find(j => String(j.id) === String(app.jobId));
+
+                const card = document.createElement("article");
+                card.className = "job-card application-card";
+
+                const title = document.createElement("h3");
+                title.textContent = job ? job.title : "Job Not Found";
+
+                const applicationId = document.createElement("p");
+                applicationId.textContent = "Application ID: " + app.id;
+
+                const student = document.createElement("p");
+                student.textContent = "Student: " + (app.studentName || "N/A");
+
+                const company = document.createElement("p");
+                company.textContent = "Company: " + (job ? job.companyName : "Not Found");
+
+                const appliedAt = document.createElement("p");
+                const date = app.appliedAt
+                    ? new Date(app.appliedAt).toLocaleDateString()
+                    : "N/A";
+                appliedAt.textContent = "Applied At: " + date;
+
+                const status = document.createElement("span");
+                const statusValue = String(app.status || "Pending").toLowerCase();
+
+                status.className = "application-status status-" +
+                    (["pending", "shortlisted", "rejected", "accepted"].includes(statusValue)
+                        ? statusValue
+                        : "other");
+
+                status.textContent = "Status: " + (app.status || "Pending");
+
+                card.append(title, applicationId, student, company, appliedAt, status);
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            container.textContent = "Unable to load applications. Please try again.";
+            console.error(error);
+        }
+    }
+
+    loadApplications();
+</script>
+
+</body>
+</html>

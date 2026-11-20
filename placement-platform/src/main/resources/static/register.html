@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Registration | PlacementHub</title>
+    <link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+<header>
+    <h2>PlacementHub</h2>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="login.html">Login</a>
+    </nav>
+</header>
+
+<main class="register-card">
+    <h1>Student Registration</h1>
+
+    <form id="registerForm">
+        <label for="name">Full Name</label>
+        <input
+                id="name"
+                type="text"
+                maxlength="100"
+                required
+        >
+        <label for="phone">Phone Number</label>
+<input
+    id="phone"
+    type="tel"
+    maxlength="20"
+    required
+    >
+        <label for="email">Email</label>
+        <input
+                id="email"
+                type="email"
+                autocomplete="email"
+                required
+        >
+
+        <label for="password">Password</label>
+        <input
+                id="password"
+                type="password"
+                minlength="8"
+                maxlength="72"
+                autocomplete="new-password"
+                required
+        >
+
+        <button id="registerButton" type="submit">
+            Create Account
+        </button>
+    </form>
+
+    <p id="message" role="status" aria-live="polite"></p>
+
+    <p>
+        Already registered?
+        <a href="login.html">Login here</a>
+    </p>
+</main>
+
+<script>
+    const form = document.getElementById("registerForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("registerButton");
+
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        button.disabled = true;
+        message.textContent = "Creating account...";
+
+        try {
+            const response = await fetch("/auth/register", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    name: document.getElementById("name").value.trim(),
+                    email: document.getElementById("email").value.trim(),
+                    phone: document.getElementById("phone").value.trim(),
+                    password: document.getElementById("password").value
+                })
+            });
+
+            const responseText = await response.text();
+
+            let result = {};
+
+            try {
+                result = responseText ? JSON.parse(responseText) : {};
+            } catch (parseError) {
+                console.error("Backend response:", responseText);
+
+                message.textContent =
+                    "HTTP Status: " + response.status +
+                    " | Response: " + responseText.slice(0, 500);
+
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    typeof result === "string"
+                        ? result
+                        : result.message || "Registration failed. Please try again."
+                );
+            }
+
+            message.textContent =
+                "Account created successfully! Opening login page...";
+
+            form.reset();
+
+            setTimeout(function() {
+                window.location.href = "/login.html";
+            }, 1200);
+
+        } catch (error) {
+            message.textContent =
+                error.message || "Could not connect to backend.";
+
+            console.error("Registration error:", error);
+
+        } finally {
+            button.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
